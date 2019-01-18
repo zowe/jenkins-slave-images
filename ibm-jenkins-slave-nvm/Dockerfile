@@ -8,6 +8,7 @@ ARG group=jenkins
 ARG uid=1000
 ARG gid=1000
 ARG JENKINS_AGENT_HOME=/home/${user}
+ARG JNLP_SLAVE_VERSION=3.28
 ARG NODE_VERSION=8.11.4
 ARG FIREFOX_VERSION=61.0.2
 ARG FIREFOX_LANGUAGE=en-US
@@ -16,6 +17,7 @@ ARG FIREFOX_LANGUAGE=en-US
 # environments
 ENV DEBIAN_FRONTEND noninteractive
 ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
+ENV JNLP_SLAVE_VERSION ${JNLP_SLAVE_VERSION}
 ENV NODE_VERSION ${NODE_VERSION}
 ENV NVM_VERSION 0.33.11
 ENV DOCKER_VERSION 18.09.0
@@ -27,6 +29,7 @@ ENV DIND_COMMIT 52379fa76dee07ca038624d639d9e14f4fb719ff
 # create jenkins user
 RUN groupadd -g ${gid} ${group} \
     && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
+RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 
 #####################################################
 # install required packages
@@ -50,6 +53,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # configure locale
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && /usr/sbin/locale-gen
+
+#####################################################
+# install jnlp slave jar
+RUN curl --create-dirs -fsSLo /usr/share/jenkins/slave.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${JNLP_SLAVE_VERSION}/remoting-${JNLP_SLAVE_VERSION}.jar \
+  && chmod 755 /usr/share/jenkins \
+  && chmod 644 /usr/share/jenkins/slave.jar
 
 #####################################################
 # install firefox
@@ -117,11 +126,15 @@ RUN set -eux; \
 #####################################################
 # install nvm on jenkins user
 # switch to jenkins user
-USER jenkins
+USER ${user}
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
-ENV NVM_DIR /home/jenkins/.nvm
+ENV NVM_DIR /home/${user}/.nvm
 # install node version and set it as the default one
 RUN /bin/bash -c "source ${NVM_DIR}/nvm.sh && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default && npm install -g yarn && npm install -g jfrog-cli-go"
+ENV NODE_PATH ${NVM_DIR}/versions/node/v${NODE_VERSION}/lib/node_modules
+ENV PATH      ${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:$PATH
+
+#####################################################
 # define volume
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"

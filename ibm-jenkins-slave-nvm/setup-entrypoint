@@ -1,0 +1,162 @@
+#!/bin/bash
+
+set -ex
+
+################################################################################
+# Use for testing (not as Jenkins agent):
+#  docker run <image/id> <command>
+# Use as SSH agent:
+#  docker run <image/id> [<public key>]
+# Or provide in environment variables :
+# * JENKINS_SLAVE_SSH_PUBKEY : SSH public key
+#
+# Use as regular JNLP agent:
+#  docker run <image/id> [options] -url http://jenkins [SECRET] [AGENT_NAME]
+# Optional environment variables :
+# * JENKINS_TUNNEL : HOST:PORT for a tunnel to route TCP traffic to jenkins host, when jenkins can't be directly accessed over network
+# * JENKINS_URL : alternate jenkins URL
+# * JENKINS_SECRET : agent secret, if not set as an argument
+# * JENKINS_AGENT_NAME : agent name, if not set as an argument
+# * JENKINS_AGENT_WORKDIR : agent work directory, if not set by optional parameter -workDir
+#
+# Use as JNLP agent run in Docker Swarm:
+#  docker run <image/id>
+# Required environment variables :
+# * DOCKER_SWARM_PLUGIN_JENKINS_AGENT_SECRET : jenkins secret if run as swarm agent
+# * DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JAR_URL : jenkins url if run as swarm agent
+# * DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL : jenkins jnlp url if run as swarm agent
+
+write_key() {
+  mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
+  echo "$1" > "${JENKINS_AGENT_HOME}/.ssh/authorized_keys"
+  chown -Rf jenkins:jenkins "${JENKINS_AGENT_HOME}/.ssh"
+  chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
+}
+
+################################################################################
+# start docker-in-docker
+exec "$(which dind)" dockerd \
+      --host=unix:///var/run/docker.sock \
+      --host=tcp://0.0.0.0:2375 &
+
+################################################################################
+# determine which mode to run, default is jnlp
+START_MODE=JNLP
+if [ -n "$DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL" ]; then
+  START_MODE=SWARM
+elif [ -n "$JENKINS_SLAVE_SSH_PUBKEY" ]; then
+  START_MODE=SSH
+elif [ $# -eq 1 ]; then
+  if [[ $1 == ssh-* ]]; then
+    # only one parameter and it starts with "ssh-", so it's a SSH public key
+    START_MODE=SSH
+  else
+    # if `docker run` only has one arguments, we assume user is running alternate command like `bash` to inspect the image
+    START_MODE=COMMAND
+  fi
+fi
+
+echo ">>>>>> Docker container will be started in $START_MODE mode. <<<<<<"
+
+################################################################################
+# start mode: command
+#    user run own command like bash
+if [ "$START_MODE" = "COMMAND" ]; then
+  exec "$@"
+
+################################################################################
+# start mode: jnlp
+elif [ "$START_MODE" = "JNLP" ]; then
+  # if -tunnel is not provided, try env vars
+  case "$@" in
+    *"-tunnel "*) ;;
+    *)
+    if [ ! -z "$JENKINS_TUNNEL" ]; then
+      TUNNEL="-tunnel $JENKINS_TUNNEL"
+    fi ;;
+  esac
+
+  # if -workDir is not provided, try env vars
+  if [ ! -z "$JENKINS_AGENT_WORKDIR" ]; then
+    case "$@" in
+      *"-workDir"*) echo "Warning: Work directory is defined twice in command-line arguments and the environment variable" ;;
+      *)
+      WORKDIR="-workDir $JENKINS_AGENT_WORKDIR" ;;
+    esac
+  fi
+
+  if [ -n "$JENKINS_URL" ]; then
+    URL="-url $JENKINS_URL"
+  fi
+
+  if [ -n "$JENKINS_NAME" ]; then
+    JENKINS_AGENT_NAME="$JENKINS_NAME"
+  fi  
+
+  if [ -z "$JNLP_PROTOCOL_OPTS" ]; then
+    echo "Warning: JnlpProtocol3 is disabled by default, use JNLP_PROTOCOL_OPTS to alter the behavior"
+    JNLP_PROTOCOL_OPTS="-Dorg.jenkinsci.remoting.engine.JnlpProtocol3.disabled=true"
+  fi
+  
+  # if java home is defined, use it
+  JAVA_BIN="java"
+  if [ "$JAVA_HOME" ]; then
+    JAVA_BIN="$JAVA_HOME/bin/java"
+  fi
+
+  # if both required options are defined, do not pass the parameters
+  OPT_JENKINS_SECRET=""
+  if [ -n "$JENKINS_SECRET" ]; then
+    case "$@" in
+      *"${JENKINS_SECRET}"*) echo "Warning: SECRET is defined twice in command-line arguments and the environment variable" ;;
+      *)
+      OPT_JENKINS_SECRET="${JENKINS_SECRET}" ;;
+    esac
+  fi
+  
+  OPT_JENKINS_AGENT_NAME=""
+  if [ -n "$JENKINS_AGENT_NAME" ]; then
+    case "$@" in
+      *"${JENKINS_AGENT_NAME}"*) echo "Warning: AGENT_NAME is defined twice in command-line arguments and the environment variable" ;;
+      *)
+      OPT_JENKINS_AGENT_NAME="${JENKINS_AGENT_NAME}" ;;
+    esac
+  fi
+
+  #TODO: Handle the case when the command-line and Environment variable contain different values.
+  #It is fine it blows up for now since it should lead to an error anyway.
+
+  exec $JAVA_BIN $JAVA_OPTS $JNLP_PROTOCOL_OPTS -cp /usr/share/jenkins/slave.jar hudson.remoting.jnlp.Main -headless $TUNNEL $URL $WORKDIR $OPT_JENKINS_SECRET $OPT_JENKINS_AGENT_NAME "$@"
+
+################################################################################
+# start mode: jnlp in swarm
+elif [ "$START_MODE" = "SWARM" ]; then
+  # this container is started with Jenkins Docker Swarm Plugin, need to start slave
+  exec curl --connect-timeout 20 --max-time 60 -o slave.jar $DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JAR_URL && \
+    java -jar slave.jar -jnlpUrl $DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL \
+      -secret $DOCKER_SWARM_PLUGIN_JENKINS_AGENT_SECRET \
+      -noReconnect -workDir /tmp
+
+################################################################################
+# start mode: ssh
+elif [ "$START_MODE" = "SSH" ]; then
+  # this container is started with ssh?
+  if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
+    write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
+  fi
+  if [[ $# -gt 0 ]]; then
+    if [[ $1 == ssh-* ]]; then
+      write_key "$1"
+      shift 1
+    else
+      exec "$@"
+    fi
+  fi
+
+  # ensure variables passed to docker container are also exposed to ssh sessions
+  env | grep _ >> /etc/environment
+
+  # start SSHd
+  ssh-keygen -A
+  exec /usr/sbin/sshd -D -e "${@}"
+fi
