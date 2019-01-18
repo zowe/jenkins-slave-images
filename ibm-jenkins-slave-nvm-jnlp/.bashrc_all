@@ -1,0 +1,20 @@
+# load $HOME/.bashrc_ni for all kind of non-interactive shell
+if [ -z "$PS1" ]; then
+  if [ -f "$HOME/.bashrc_ni" ]; then
+    . "$HOME/.bashrc_ni"
+  fi
+fi
+
+###################################################
+# KEYTAR SPECIFICS                                #
+###################################################
+# Needed so that the D-Bus message service can    #
+# be used for the entire session so that we can   #
+# unlock the gnome keyring used by keytar         #
+###################################################
+if test -z "$DBUS_SESSION_BUS_ADDRESS" ; then
+  eval `dbus-launch --sh-syntax`
+fi
+###################################################
+# END KEYTAR SPECIFICS                            #
+###################################################
