@@ -51,8 +51,12 @@ elif [ $# -eq 1 ]; then
     # only one parameter and it starts with "ssh-", so it's a SSH public key
     START_MODE=SSH
   else
-    # if `docker run` only has one arguments, we assume user is running alternate command like `bash` to inspect the image
-    START_MODE=COMMAND
+    # if `docker run` only has one arguments, we assume user is running alternate
+    # command like `bash` to inspect the image
+    # FIXME: command mode is disabled since Jenkins Docker Plugin will pass
+    #        '/bin/sh' for "Attach Docker container" choice.
+    #        Try docker exec to attach to the container.
+    # START_MODE=COMMAND
   fi
 fi
 
