@@ -4,7 +4,7 @@
 
 A jenkins slave image supports:
 
-- [Docker in Docker](https://hub.docker.com/_/docker/)
+- [Docker in Docker](https://hub.docker.com/_/docker/) Possibility
 - OpenJDK 8
 - JNLP & SSH Slave
 - [Node Version Manager](https://github.com/creationix/nvm)
@@ -27,6 +27,14 @@ Currently published to [Docker hub: zowe/ibm-jenkins-slave-nvm](https://hub.dock
 ## Build And Test Image
 
 To build image, run command `docker build -t zowe/ibm-jenkins-slave-nvm .`.
+
+### To Enable Docker in Docker
+
+You need to mount host docker `/var/run/docker.sock` to the container. For example:
+
+```
+$ docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock zowe/ibm-jenkins-slave-nvm "$(cat ~/.ssh/id_rsa.pub)"
+```
 
 ### Test Image With SSH Connection
 
