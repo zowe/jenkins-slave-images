@@ -34,6 +34,13 @@ write_key() {
 }
 
 ################################################################################
+# ensure docker.sock group
+if [ -f "/var/run/docker.sock" ]; then
+  echo ">>>>>> Ensure docker.sock group ... <<<<<<"
+  sudo chgrp docker /var/run/docker.sock
+fi
+
+################################################################################
 # determine which mode to run, default is jnlp
 START_MODE=JNLP
 if [ -n "$DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL" ]; then

@@ -41,12 +41,14 @@ RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 # - dbus-x11: includes dbus-launch
 # - libdbus-glib-1-2: used by firefox
 # - cpanminus libssl-dev: used by w3c link checker
+# - sudo: required by docker-in-docker
 RUN apt-get update && apt-get install --no-install-recommends -y \
     openssh-server \
     vim curl wget rsync pax build-essential sshpass bzip2 jq locales \
     cpanminus libssl-dev \
     gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
     libdbus-glib-1-2 \
+    sudo \
    && rm -rf /var/lib/apt/lists/*
 
 #####################################################
@@ -135,6 +137,11 @@ RUN set -eux; \
   \
   dockerd --version; \
   docker --version
+
+#####################################################
+# allow jenkins user to use sudo without password
+RUN (echo "${user} ALL = (ALL) NOPASSWD: ALL" > /etc/sudoers.d/jenkinsnosudo && \
+  chmod 0440 /etc/sudoers.d/jenkinsnosudo)
 
 #####################################################
 # install nvm on jenkins user
