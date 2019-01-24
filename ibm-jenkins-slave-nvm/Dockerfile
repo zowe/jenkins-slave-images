@@ -130,7 +130,7 @@ USER ${user}
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
 ENV NVM_DIR /home/${user}/.nvm
 # install node version and set it as the default one
-RUN /bin/bash -c "source ${NVM_DIR}/nvm.sh && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default && npm install -g yarn && npm install -g jfrog-cli-go"
+RUN /bin/bash -c "source ${NVM_DIR}/nvm.sh && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default && npm install -g npm && npm install -g yarn && npm install -g jfrog-cli-go"
 ENV NODE_PATH ${NVM_DIR}/versions/node/v${NODE_VERSION}/lib/node_modules
 ENV PATH      ${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:$PATH
 
