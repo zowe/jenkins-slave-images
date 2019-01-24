@@ -12,6 +12,7 @@ A jenkins slave image supports:
 - [JFrog CLI](https://jfrog.com/getcli/)
 - Firefox v61.0.2 for headless Selenium test
 - gnome-keyring and keytar
+- [w3c Link Checker](https://github.com/w3c/link-checker)
 - Other Ubuntu packages:
   * curl
   * wget

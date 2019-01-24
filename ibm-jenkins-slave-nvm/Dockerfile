@@ -20,6 +20,7 @@ ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 ENV JNLP_SLAVE_VERSION ${JNLP_SLAVE_VERSION}
 ENV NODE_VERSION ${NODE_VERSION}
 ENV NVM_VERSION 0.33.11
+ENV CHECKLINK_VERSION 4_81
 ENV DOCKER_VERSION 18.09.0
 ENV DOCKER_CHANNEL stable
 ENV DOCKER_ARCH x86_64
@@ -39,9 +40,11 @@ RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 # - libsecret-1-dev: required by npm install rebuild keytar
 # - dbus-x11: includes dbus-launch
 # - libdbus-glib-1-2: used by firefox
+# - cpanminus libssl-dev: used by w3c link checker
 RUN apt-get update && apt-get install --no-install-recommends -y \
     openssh-server \
     vim curl wget rsync pax build-essential sshpass bzip2 jq locales \
+    cpanminus libssl-dev \
     gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
     libdbus-glib-1-2 \
    && rm -rf /var/lib/apt/lists/*
@@ -96,6 +99,21 @@ COPY .bashrc_all /tmp/.bashrc_all
 COPY .bashrc_ni /home/jenkins/.bashrc_ni
 # prepend to ~/.bashrc
 RUN sed -i -e "/# If not running interactively, don't do anything/r /tmp/.bashrc_all" -e //N /home/jenkins/.bashrc
+
+#####################################################
+# install w3c link checker
+RUN set -x \
+  && curl -sSL https://github.com/w3c/link-checker/archive/checklink-${CHECKLINK_VERSION}.tar.gz -o /tmp/link-checker.tar.gz \
+  && tar -xzf /tmp/link-checker.tar.gz -C /tmp \
+  && rm /tmp/link-checker.tar.gz \
+  && cd /tmp/link-checker-checklink-${CHECKLINK_VERSION} \
+  && cpanm --installdeps . \
+  && cpanm LWP::Protocol::https \
+  && perl Makefile.PL \
+  && make \
+  && make test \
+  && make install \
+  && rm -rf /tmp/link-checker-checklink-${CHECKLINK_VERSION}
 
 #####################################################
 # install docker
