@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -ex
+
+# APP_DIR is defined in Dockerfile
+
+################################################################################
+# start nginx in background
+if [ -d "${APP_DIR}/nginx-conf.d" ]; then
+  cp "${APP_DIR}/nginx-conf.d/*.conf" /etc/nginx/conf.d
+  nginx -g 'daemon off;' &
+fi
+
+################################################################################
+# import environment .env
+if [ -f "${APP_DIR}/.env" ]; then
+  echo ">>>> importing .env ..."
+  export $(grep -v '^#' "${APP_DIR}/.env" | xargs)
+  echo ">>>> current environment variables:"
+  env
+  echo
+fi
+
+################################################################################
+# start application
+if [[ $# -gt 0 ]]; then
+  echo ">>>> starting command line ..."
+  exec "$@"
+elif [ -f "${APP_DIR}/bootstrap.sh" ]; then
+  echo ">>>> starting application (bootstrap.sh) ..."
+  exec "${APP_DIR}/bootstrap.sh"
+else
+  echo ">>>> starting bash (default action) ..."
+  exec "/bin/bash"
+fi
