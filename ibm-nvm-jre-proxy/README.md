@@ -20,11 +20,11 @@ To build image, run command `docker build -t jackjiaibm/ibm-nvm-jre-proxy .`.
 To test run image, run command:
 
 ```
-$ docker run --rm -it -v ./app-folder:/app -p 443:7554 jackjiaibm/ibm-nvm-jre-proxy
+$ docker run --rm -it -v $PWD/app-folder:/app -p 7554:80 jackjiaibm/ibm-nvm-jre-proxy
 ```
 
 The `./app-folder` can have these content:
 
-- **nginx-conf.d**: nginx configurations
-- **.env**: environment variables
-- **boorstrap.sh**: application bootstrap script
+- **nginx-conf.d**: nginx configurations. The config should define a server listen on port 80.
+- **.env**: environment variables in KEY=VALUE format for each line.
+- **boorstrap.sh**: application bootstrap script to start the application.
