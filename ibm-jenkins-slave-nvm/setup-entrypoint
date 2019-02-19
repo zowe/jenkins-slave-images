@@ -46,11 +46,11 @@ if [ -n "$DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL" ]; then
   START_MODE=SWARM
 elif [ -n "$JENKINS_SLAVE_SSH_PUBKEY" ]; then
   START_MODE=SSH
-elif [ $# -eq 1 ]; then
+elif [ $# -gt 0 ]; then
   if [[ $1 == ssh-* ]]; then
     # only one parameter and it starts with "ssh-", so it's a SSH public key
     START_MODE=SSH
-  else
+  elif [[ $1 == "sh" ]]; then
     # if `docker run` only has one arguments, we assume user is running alternate
     # command like `bash` to inspect the image
     START_MODE=COMMAND
