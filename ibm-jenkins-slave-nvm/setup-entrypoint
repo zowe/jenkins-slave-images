@@ -33,6 +33,10 @@ write_key() {
   chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
 }
 
+echo "============ Environment Variables Start ===================================="
+env
+echo "============ Environment Variables End ======================================"
+
 ################################################################################
 # start docker-in-docker
 exec "$(which dind)" dockerd \
