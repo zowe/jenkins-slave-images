@@ -1,0 +1,13 @@
+I, Jack (T.) Jia hereby sign-off-by all of my past commits to this repo subject to the Developer Certificate of Origin (DCO), Version 1.1. In the past I have used emails: jack-tiefeng.jia@ibm.com
+
+3cbbc336927f709f014841fab42c579db5bde980 show env variables
+0bdc0396717f784c5ae1c1ad24384693cbb3feb1 update way to launch command mode
+4c7c099e67a277a82a20a91a3195aa92f40923f4 fix readme
+8cac2dc5cc5ab26481a41c8215fb3542539ef42b improve entrypoint script
+1f2986a5d5f48e929a68fedfa95baef1c9509527 new image ibm-nvm-jre-proxy
+92ba3d0968a425479094053b57af45e5cd84b018 upgrade npm
+bf3649b85ba66e9ac8b8d66473b7d6dafa881e1f update exec command
+26d6407bb738a34afe6302a07bb1e317e6440b77 disable command start mode
+02f7b94b32b3063c71fe12aedbdb6a4e5f8b5e05 combine ssh/jnlp/swarm agent in same image
+377a7bd9d4c6698bba6e52601866ffd4e337f2ed migrate from https://github.com/jackjia-ibm/ibm-jenkins-slave-nvm but removed w3c link checker
+8e85f71695645312c3ef5891ef25f69de6a2e231 Initial commit
