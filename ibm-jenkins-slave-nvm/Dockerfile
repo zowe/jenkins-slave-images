@@ -41,13 +41,19 @@ RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 # - dbus-x11: includes dbus-launch
 # - libdbus-glib-1-2: used by firefox
 # - iptables: required by docker
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    openssh-server \
-    vim curl wget rsync pax build-essential sshpass bzip2 jq locales \
-    gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
-    libdbus-glib-1-2 \
-    iptables \
-   && rm -rf /var/lib/apt/lists/*
+# - git-lts
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && \
+    apt-get install -y --no-install-recommends \
+      openssh-server \
+      vim wget rsync pax build-essential sshpass bzip2 jq locales \
+      gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
+      libdbus-glib-1-2 \
+      iptables \
+      git-lfs \
+   && git lfs install && \
+   rm -rf /var/lib/apt/lists/*
 
 #####################################################
 # configure locale
