@@ -51,6 +51,9 @@ if [ -n "$DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL" ]; then
 elif [ -n "$JENKINS_SLAVE_SSH_PUBKEY" ]; then
   START_MODE=SSH
 elif [ $# -gt 0 ]; then
+  echo "============ Command Line Start ===================================="
+  echo $@
+  echo "============ Command Line End ======================================"
   if [[ $1 == ssh-* ]]; then
     # only one parameter and it starts with "ssh-", so it's a SSH public key
     START_MODE=SSH
