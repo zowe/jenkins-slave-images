@@ -57,6 +57,10 @@ elif [ $# -gt 0 ]; then
   if [[ $1 == ssh-* ]]; then
     # only one parameter and it starts with "ssh-", so it's a SSH public key
     START_MODE=SSH
+  elif [[ $1 == "/usr/sbin/sshd" ]]; then
+    # docker plugin may start container with this command:
+    # /usr/sbin/sshd -D -p 22 -o AuthorizedKeysCommand=/root/authorized_key -o AuthorizedKeysCommandUser=root
+    START_MODE=SSH
   elif [[ $1 == "sh" ]]; then
     # if `docker run` only has one arguments, we assume user is running alternate
     # command like `bash` to inspect the image
