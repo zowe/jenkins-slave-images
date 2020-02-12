@@ -22,28 +22,28 @@ A jenkins slave image supports:
   * sshpass
   * jq
 
-Currently published to [Docker hub: zowe/ibm-jenkins-slave-nvm](https://hub.docker.com/r/zowe/ibm-jenkins-slave-nvm/).
+Currently published to [Docker hub: jackjiaibm/zowe-jenkins-slave-nvm](https://hub.docker.com/r/jackjiaibm/zowe-jenkins-slave-nvm/).
 
 ## Build And Test Image
 
-To build image, run command `docker build -t zowe/ibm-jenkins-slave-nvm .`.
+To build image, run command `docker build -t jackjiaibm/zowe-jenkins-slave-nvm .`.
 
 ### Test Image With SSH Connection
 
 To test run image, run command:
 
 ```
-$ docker run --rm -it --privileged zowe/ibm-jenkins-slave-nvm <public key>
+$ docker run --rm -it --privileged jackjiaibm/zowe-jenkins-slave-nvm <public key>
 
 # or
 
-$ docker run --rm -it --privileged -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" zowe/ibm-jenkins-slave-nvm
+$ docker run --rm -it --privileged -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jackjiaibm/zowe-jenkins-slave-nvm
 ```
 
 For example, use your local SSH public key:
 
 ```
-$ docker run --rm -it --privileged zowe/ibm-jenkins-slave-nvm "$(cat ~/.ssh/id_rsa.pub)"
+$ docker run --rm -it --privileged jackjiaibm/zowe-jenkins-slave-nvm "$(cat ~/.ssh/id_rsa.pub)"
 ```
 
 ### Test Image With JNLP Connection
@@ -53,7 +53,7 @@ $ docker run --rm -it --privileged \
   -e "DOCKER_SWARM_PLUGIN_JENKINS_AGENT_SECRET=<jenkins secret>" \
   -e "DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JAR_URL=<url to slave.jar>" \
   -e "DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL=<url to jnlp>" \
-  zowe/ibm-jenkins-slave-nvm
+  jackjiaibm/zowe-jenkins-slave-nvm
 ```
 
 For example:
@@ -63,7 +63,7 @@ $ docker run --rm -it --privileged \
   -e "DOCKER_SWARM_PLUGIN_JENKINS_AGENT_SECRET=<jenkins secret>" \
   -e "DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JAR_URL=https://wash.zowe.org:8443/jnlpJars/slave.jar" \
   -e "DOCKER_SWARM_PLUGIN_JENKINS_AGENT_JNLP_URL=https://wash.zowe.org:8443/computer/agent-st_pipeline__77-30269/slave-agent.jnlp" \
-  zowe/ibm-jenkins-slave-nvm
+  jackjiaibm/zowe-jenkins-slave-nvm
 ```
 
 After the Jenkins client container is started, you can use `docker ps` find the container and user `docker exec -it -u jenkins <container-id> bash` to connect to the container.

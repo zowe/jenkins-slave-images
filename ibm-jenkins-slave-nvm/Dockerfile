@@ -32,6 +32,10 @@ RUN groupadd -g ${gid} ${group} \
 RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 
 #####################################################
+# add ansible ppa
+RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" >> /etc/apt/sources.list
+
+#####################################################
 # install required packages
 # - build-essential: provide make and gcc which will be used in "npm install"
 # - sshpass: allow ssh to other servers
@@ -42,18 +46,21 @@ RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 # - libdbus-glib-1-2: used by firefox
 # - iptables: required by docker
 # - git-lts
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates && \
-    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && \
-    apt-get install -y --no-install-recommends \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+    && apt-get install -y --no-install-recommends \
       openssh-server \
       vim wget rsync pax build-essential sshpass bzip2 jq locales \
       gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
       libdbus-glib-1-2 \
       iptables \
       git-lfs \
-   && git lfs install && \
-   rm -rf /var/lib/apt/lists/*
+      ansible \
+   && git lfs install \
+   && ansible --version \
+   && rm -rf /var/lib/apt/lists/*
 
 #####################################################
 # configure locale
