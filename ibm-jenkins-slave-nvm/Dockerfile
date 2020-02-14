@@ -46,8 +46,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     vim curl wget rsync pax build-essential sshpass bzip2 jq locales \
     gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
     libdbus-glib-1-2 \
-    iptables \
-   && rm -rf /var/lib/apt/lists/*
+    iptables
 
 #####################################################
 # configure locale
@@ -76,6 +75,13 @@ RUN wget --no-verbose --show-progress --progress=dot:giga --directory-prefix lin
     && tar --extract --bzip2 --file linux-x86_64/${FIREFOX_LANGUAGE}/firefox-${FIREFOX_VERSION}.tar.bz2 --directory /usr/lib/ \
     && rm -fr linux-x86_64 \
     && ln -fs /usr/lib/firefox/firefox /usr/bin/firefox
+
+#####################################################
+# install chrome (we can only install the latest version now)
+RUN wget --no-verbose --show-progress --progress=dot:giga https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+  && apt install -y ./google-chrome-stable_current_amd64.deb \
+  && rm google-chrome-stable_current_amd64.deb \
+  && /usr/bin/google-chrome --version
 
 #####################################################
 # setup SSH server
@@ -122,6 +128,10 @@ RUN set -eux; \
   docker --version; \
   wget -O /usr/local/bin/dind "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind"; \
   chmod +x /usr/local/bin/dind
+
+#####################################################
+# Clean apt cache
+RUN rm -rf /var/lib/apt/lists/*
 
 #####################################################
 # install nvm on jenkins user
