@@ -102,9 +102,9 @@ RUN cat /tmp/pam.config >> /etc/pam.d/sshd \
     && rm /tmp/pam.config
 
 COPY .bashrc_all /tmp/.bashrc_all
-COPY .bashrc_ni /home/jenkins/.bashrc_ni
+COPY .bashrc_ni ${JENKINS_AGENT_HOME}/.bashrc_ni
 # prepend to ~/.bashrc
-RUN sed -i -e "/# If not running interactively, don't do anything/r /tmp/.bashrc_all" -e //N /home/jenkins/.bashrc
+RUN sed -i -e "/# If not running interactively, don't do anything/r /tmp/.bashrc_all" -e //N ${JENKINS_AGENT_HOME}/.bashrc
 
 #####################################################
 # install docker
@@ -134,11 +134,18 @@ RUN set -eux; \
 RUN rm -rf /var/lib/apt/lists/*
 
 #####################################################
+# the new "openjdk:8-jdk" base image put Java in "/usr/local/openjdk-8" folder
+# we need a symlink
+RUN mkdir -p /usr/java \
+  && ln -s /usr/local/openjdk-8 /usr/java/openjdk-8 \
+  && ln -s /usr/local/openjdk-8 /usr/java/default
+
+#####################################################
 # install nvm on jenkins user
 # switch to jenkins user
 USER ${user}
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
-ENV NVM_DIR /home/${user}/.nvm
+ENV NVM_DIR ${JENKINS_AGENT_HOME}/.nvm
 # install node version and set it as the default one
 RUN /bin/bash -c "source ${NVM_DIR}/nvm.sh && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default && npm install -g npm && npm install -g yarn && npm install -g jfrog-cli-go"
 ENV NODE_PATH ${NVM_DIR}/versions/node/v${NODE_VERSION}/lib/node_modules

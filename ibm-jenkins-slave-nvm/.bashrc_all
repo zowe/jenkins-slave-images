@@ -18,3 +18,7 @@ fi
 ###################################################
 # END KEYTAR SPECIFICS                            #
 ###################################################
+
+# Add JDK to path
+export PATH=/usr/java/default/bin:$PATH
+
