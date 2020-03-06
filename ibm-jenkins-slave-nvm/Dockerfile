@@ -9,7 +9,7 @@ ARG uid=1000
 ARG gid=1000
 ARG JENKINS_AGENT_HOME=/home/${user}
 ARG JNLP_SLAVE_VERSION=3.28
-ARG NODE_VERSION=8.11.4
+ARG NODE_VERSION=8.17.0
 ARG FIREFOX_VERSION=61.0.2
 ARG FIREFOX_LANGUAGE=en-US
 
@@ -130,6 +130,13 @@ RUN set -eux; \
   chmod +x /usr/local/bin/dind
 
 #####################################################
+# install Ansible
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python get-pip.py \
+    && pip install ansible \
+    && ansible --version
+
+#####################################################
 # Clean apt cache
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -138,9 +145,19 @@ RUN rm -rf /var/lib/apt/lists/*
 # switch to jenkins user
 USER ${user}
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
+SHELL ["/bin/bash", "-c"]
 ENV NVM_DIR /home/${user}/.nvm
 # install node version and set it as the default one
-RUN /bin/bash -c "source ${NVM_DIR}/nvm.sh && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default && npm install -g npm && npm install -g yarn && npm install -g jfrog-cli-go"
+RUN source ${NVM_DIR}/nvm.sh \
+    && nvm install $NODE_VERSION \
+    && nvm use $NODE_VERSION \
+    && npm install -g npm \
+    && npm install -g yarn \
+    && npm install -g jfrog-cli-go \
+    && nvm alias default $NODE_VERSION \
+    && nvm alias node $NODE_VERSION \
+    && nvm alias stable $NODE_VERSION \
+    && nvm use default
 ENV NODE_PATH ${NVM_DIR}/versions/node/v${NODE_VERSION}/lib/node_modules
 ENV PATH      ${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:$PATH
 
