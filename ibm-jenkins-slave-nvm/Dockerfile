@@ -130,6 +130,13 @@ RUN set -eux; \
   chmod +x /usr/local/bin/dind
 
 #####################################################
+# install Ansible
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python get-pip.py \
+    && pip install ansible \
+    && ansible --version
+
+#####################################################
 # Clean apt cache
 RUN rm -rf /var/lib/apt/lists/*
 
