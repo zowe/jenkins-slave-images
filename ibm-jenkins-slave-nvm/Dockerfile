@@ -40,12 +40,14 @@ RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 # - libsecret-1-dev: required by npm install rebuild keytar
 # - dbus-x11: includes dbus-launch
 # - libdbus-glib-1-2: used by firefox
+# - libx11-dev libxkbfile-dev: required by theia
 # - iptables: required by docker
 RUN apt-get update && apt-get install --no-install-recommends -y \
     openssh-server \
     vim curl wget rsync pax build-essential sshpass bzip2 jq locales \
     gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
     libdbus-glib-1-2 \
+    libx11-dev libxkbfile-dev \
     iptables
 
 #####################################################
