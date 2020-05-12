@@ -41,13 +41,15 @@ RUN mkdir ${JENKINS_AGENT_HOME}/.jenkins
 # - dbus-x11: includes dbus-launch
 # - libdbus-glib-1-2: used by firefox
 # - libx11-dev libxkbfile-dev: required by theia
+# - xvfb: required by cypress
 # - iptables: required by docker
 RUN apt-get update && apt-get install --no-install-recommends -y \
     openssh-server \
-    vim curl wget rsync pax build-essential sshpass bzip2 jq locales \
+    vim curl wget rsync pax build-essential sshpass bzip2 zip jq locales \
     gnome-keyring libsecret-1-dev dbus dbus-user-session dbus-x11 \
     libdbus-glib-1-2 \
     libx11-dev libxkbfile-dev \
+    libgtk2.0-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 xvfb \
     iptables
 
 #####################################################
