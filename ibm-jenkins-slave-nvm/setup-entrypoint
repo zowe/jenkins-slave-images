@@ -38,6 +38,12 @@ env
 echo "============ Environment Variables End ======================================"
 
 ################################################################################
+# always to use vfs storage
+cat <<EOT >> /etc/docker/daemon.json
+{
+  "storage-driver": "vfs"
+}
+EOT
 # start docker-in-docker
 exec "$(which dind)" dockerd \
       --host=unix:///var/run/docker.sock \
