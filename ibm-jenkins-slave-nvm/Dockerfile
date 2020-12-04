@@ -171,6 +171,11 @@ WORKDIR "${JENKINS_AGENT_HOME}"
 USER root
 
 #####################################################
+# always to use vfs storage
+RUN mkdir -p /etc/docker
+COPY daemon.json /etc/docker/daemon.json
+
+#####################################################
 # expose and entrypoint
 EXPOSE 22
 COPY setup-entrypoint /usr/local/bin/setup-entrypoint
