@@ -39,7 +39,7 @@ echo "============ Environment Variables End ===================================
 
 ################################################################################
 # always to use vfs storage
-cat <<EOT >> /etc/docker/daemon.json
+cat <<EOT > /etc/docker/daemon.json
 {
   "storage-driver": "vfs"
 }
